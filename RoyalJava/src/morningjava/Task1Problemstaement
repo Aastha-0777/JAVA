@@ -1,0 +1,7 @@
+Make one java program,where the grand parent class is the person where you take the name and mobile no from user by method,
+then make amazon class as parent and take product name, delivery
+address,order date by method and
+
+make a child class named delivery where you assign a delivery date and display it
+
+Then in the main method make an object of the delivery class and display all info with the help of it

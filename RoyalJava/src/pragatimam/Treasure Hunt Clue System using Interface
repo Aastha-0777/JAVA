@@ -1,0 +1,56 @@
+/**
+ * JAVA PRACTICAL ASSIGNMENT[cite: 1]
+ * Treasure Hunt Clue System using Interface[cite: 1]
+ *
+ * ==========================================
+ * PROBLEM STATEMENT
+ * ==========================================
+ * A Treasure Hunt event consists of different clue providers[cite: 1]. Every clue provider helps the player by
+ * giving clues, but each one delivers the clue in a different way such as Text, Image, or Audio[cite: 1].
+ * Develop a Java application using the Interface concept to simulate a Treasure Hunt Clue System[cite: 1].
+ * The application should demonstrate Method Overriding, Runtime Polymorphism, and Dynamic
+ * Method Dispatch[cite: 1].
+ *
+ * OBJECTIVES
+ * - Understand Java Interface[cite: 1].
+ * - Implement Method Overriding[cite: 1].
+ * - Demonstrate Runtime Polymorphism[cite: 1].
+ * - Design a real-world OOP application[cite: 1].
+ *
+ * REQUIREMENTS
+ * - Create an interface ClueProvider[cite: 1].
+ * - Declare: void giveClue()[cite: 1].
+ * - Create classes: TextClue, ImageClue, AudioClue[cite: 1].
+ * - Each class should accept Player Name, Level Number and Clue[cite: 1].
+ * - Override giveClue() in every class[cite: 1].
+ * - Display clues according to the clue type[cite: 1].
+ * - Accept input using Scanner[cite: 1].
+ * - Create objects of all classes[cite: 1].
+ * - Use interface reference: ClueProvider c[cite: 1].
+ * - Demonstrate Runtime Polymorphism[cite: 1].
+ * - Display Level Completed after every clue and Treasure Found Successfully! at the end[cite: 1].
+ *
+ * INPUT
+ * - Player Name[cite: 1]
+ * - Level Number[cite: 1]
+ * - Clue Message[cite: 1]
+ *
+ * SAMPLE OUTPUT
+ * ========== Treasure Hunt =========[cite: 1]
+ * Player Pragati[cite: 1]
+ * Level: 3[cite: 1]
+ * 
+ * Text Clue[cite: 1]
+ * Look behind the old tree.[cite: 1]
+ * Status Clue Displayed[cite: 1]
+ * 
+ * Image Clue[cite: 1]
+ * Treasure map displayed.[cite: 1]
+ * Status Clue Displayed[cite: 1]
+ * 
+ * Audio Clue Playing audio hint...[cite: 1]
+ * Status Clue Played Successfully[cite: 1]
+ * 
+ * Congratulations![cite: 1]
+ * Treasure Found Successfully.[cite: 1]
+ */

@@ -1,0 +1,37 @@
+=========================================
+PROBLEM: SIMPLE FOOD DELIVERY SYSTEM
+=========================================
+
+1. INTERFACE: Discountable
+--------------------------
+* Method: double applyDiscount(double percentage)
+
+
+2. ABSTRACT CLASS: FoodItem
+---------------------------
+* Private Fields: String name, double price
+* Constructor: Sets name and price
+* Getters: getName(), getPrice()
+* Abstract Method: void prepare()
+
+
+3. CONCRETE CLASS: Pizza (Extends FoodItem, Implements Discountable)
+-----------------------------------------------------------------
+* Constructor: Passes name and price to super()
+* Method prepare(): Print "Baking pizza in the oven..."
+* Method applyDiscount(percentage): Reduce price by percentage, return new price
+
+
+4. CONCRETE CLASS: Salad (Extends FoodItem)
+----------------------------------------
+* Constructor: Passes name and price to super()
+* Method prepare(): Print "Chopping fresh vegetables..."
+
+
+5. MAIN CLASS (Main)
+--------------------
+* Create Pizza ("Margherita", 10.0)
+* Create Salad ("Caesar Salad", 6.0)
+* Call prepare() on both
+* Apply 20% discount on the pizza and print the new price
+=========================================

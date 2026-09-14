@@ -1,0 +1,13 @@
+package exceptiontopic;
+
+public class ArrOutOfBoundException {
+
+	public static void main(String[] args) {
+		
+		int arr[] = new int[5];
+		
+		System.out.println("arr[6]" + arr[6]);
+		
+	}
+	
+}
