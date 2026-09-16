@@ -1,4 +1,4 @@
-package listtopicjava;
+package dsa;
 
 import java.util.LinkedList;
 import java.util.Scanner;
