@@ -14,7 +14,7 @@ public class EmpMangementApp {
 
 		do {
 
-			System.out.println("Enter below choice for Employee Application : ");
+			System.out.println("================== EMPLOYEE MANAGEMENT APPLICATION ==================");
 			System.out.println("1. Add Employee--list");
 			System.out.println("2. Update Employee By Id");
 			System.out.println("3. Delete Employee By Id");
@@ -26,6 +26,7 @@ public class EmpMangementApp {
 			System.out.println("9. Check whether a Employee is already enrolled.");
 			System.out.println("10. Display total enrolled Employees.");
 			System.out.println("11. Employee Application Exit");
+			System.out.print("Enter above choice for Employee Application : ");
 			choice = sc.nextInt();
 			switch (choice) {
 
@@ -40,9 +41,59 @@ public class EmpMangementApp {
 				break;
 
 			case 3:
+
+				System.out.print("Enter the Employee ID You want to Delete : ");
+				int id = sc.nextInt();
+				boolean deleteFlag = true;
+
+				for (int i = 0; i < empList.size(); i++) {
+
+					e = empList.get(i);
+
+					if (e.getId() == id) {
+
+						deleteFlag = false;
+						empList.remove(i);
+						System.out.println(
+								"Employe with id : " + id + " has been removed Successufully form the Database!");
+
+					}
+
+				}
+
+				if (deleteFlag) {
+
+					System.out.println("Employe with id : " + id + " is not found in	 the Database!");
+
+				}
+
 				break;
 
 			case 4:
+
+				System.out.print("Enter the Employee ID You Want to Search : ");
+				int searchId = sc.nextInt();
+				boolean searchFlag = true;
+
+				for (int i = 0; i < empList.size(); i++) {
+
+					e = empList.get(i);
+
+					if (e.getId() == searchId) {
+
+						e.display();
+						searchFlag = false;
+
+					}
+
+				}
+
+				if (searchFlag) {
+
+					System.out.println("Employe with id : " + searchId + " is not found in the Database!");
+
+				} // end of if
+
 				break;
 
 			case 5:
