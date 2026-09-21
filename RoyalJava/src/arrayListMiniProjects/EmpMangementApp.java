@@ -5,6 +5,44 @@ import java.util.Scanner;
 
 public class EmpMangementApp {
 
+	public static int searchEmpByValue(ArrayList<Employee> list, String searchValue, boolean flag) {
+
+		if (flag) {
+
+			for (int i = 0; i < list.size(); i++) {
+
+				Employee e = list.get(i);
+				if (searchValue.equals(e.getName())) {
+
+					return i;
+
+				}
+
+			}
+
+			return -1;
+
+		} else {
+
+			int searchId = Integer.parseInt(searchValue);
+			
+			for (int i = 0; i < list.size(); i++) {
+
+				Employee e = list.get(i);
+				if (e.getId() == searchId) {
+
+					return i;
+
+				}
+
+			}
+
+			return -1;
+
+		}
+
+	}
+
 	public static void main(String[] args) {
 
 		Scanner sc = new Scanner(System.in);
@@ -73,22 +111,15 @@ public class EmpMangementApp {
 
 				System.out.print("Enter the Employee ID You Want to Search : ");
 				int searchId = sc.nextInt();
-				boolean searchFlag = true;
-
-				for (int i = 0; i < empList.size(); i++) {
-
-					e = empList.get(i);
-
-					if (e.getId() == searchId) {
-
-						e.display();
-						searchFlag = false;
-
-					}
-
-				}
-
-				if (searchFlag) {
+				
+				int result = searchEmpByValue(empList, searchId+"", false);
+				
+				if(result != -1) {
+					
+					Employee emp = empList.get(result);
+					emp.display();
+					
+				}else{
 
 					System.out.println("Employe with id : " + searchId + " is not found in the Database!");
 
@@ -97,6 +128,24 @@ public class EmpMangementApp {
 				break;
 
 			case 5:
+
+				System.out.print("Enter the Employee Name You Want to Search : ");
+				sc.nextLine();
+				String searchName = sc.nextLine();
+				
+				result = searchEmpByValue(empList, searchName, true);
+
+				if(result != -1) {
+					
+					Employee emp = empList.get(result);
+					emp.display();
+					
+				}else {
+
+					System.out.println("Employe with id : " + searchName + " is not found in the Database!");
+
+				} // end of if
+
 				break;
 
 			case 6:
