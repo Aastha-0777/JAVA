@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 public class EmpMangementApp {
 
-	public static int searchEmpByValue(ArrayList<Employee> list, String searchValue, boolean flag) {
+	public static Object searchEmpByValue(ArrayList<Employee> list, String searchValue, boolean flag) {
 
 		if (flag) {
 
@@ -14,7 +14,7 @@ public class EmpMangementApp {
 				Employee e = list.get(i);
 				if (searchValue.equals(e.getName())) {
 
-					return i;
+					return true;
 
 				}
 
@@ -25,13 +25,13 @@ public class EmpMangementApp {
 		} else {
 
 			int searchId = Integer.parseInt(searchValue);
-			
+
 			for (int i = 0; i < list.size(); i++) {
 
 				Employee e = list.get(i);
 				if (e.getId() == searchId) {
 
-					return i;
+					return true;
 
 				}
 
@@ -111,19 +111,38 @@ public class EmpMangementApp {
 
 				System.out.print("Enter the Employee ID You Want to Search : ");
 				int searchId = sc.nextInt();
-				
-				int result = searchEmpByValue(empList, searchId+"", false);
-				
-				if(result != -1) {
-					
-					Employee emp = empList.get(result);
-					emp.display();
-					
-				}else{
 
-					System.out.println("Employe with id : " + searchId + " is not found in the Database!");
+				Object obj = searchEmpByValue(empList, searchId + "", false);
 
-				} // end of if
+				if (obj instanceof Integer) {
+
+					Integer result = (Integer) obj;
+
+					if (result != -1) {
+
+						System.out.println("Employe with id : " + searchId + " found in the Database!");
+
+					} else {
+
+						System.out.println("Employe with id : " + searchId + " is not found in the Database!");
+
+					} // end of if
+
+				} else {
+
+					boolean resFlag = (boolean) obj;
+
+					if (resFlag) {
+						
+						System.out.println("Employe with id : " + searchId + " found in the Database!");
+
+					} else {
+
+						System.out.println("Employe with id : " + searchId + " is not found in the Database!");
+
+					}
+
+				}
 
 				break;
 
@@ -132,19 +151,38 @@ public class EmpMangementApp {
 				System.out.print("Enter the Employee Name You Want to Search : ");
 				sc.nextLine();
 				String searchName = sc.nextLine();
-				
-				result = searchEmpByValue(empList, searchName, true);
 
-				if(result != -1) {
-					
-					Employee emp = empList.get(result);
-					emp.display();
-					
-				}else {
+				obj = searchEmpByValue(empList, searchName, true);
 
-					System.out.println("Employe with id : " + searchName + " is not found in the Database!");
+				if (obj instanceof Integer) {
 
-				} // end of if
+					Integer result = (Integer) obj;
+
+					if (result != -1) {
+
+						System.out.println("Employe with Name : " + searchName + " found in the Database!");
+
+					} else {
+
+						System.out.println("Employe with Name : " + searchName + " is not found in the Database!");
+
+					} // end of if
+
+				} else {
+
+					boolean resFlag = (boolean) obj;
+
+					if (resFlag) {
+
+						System.out.println("Employe with Name : " + searchName + " found in the Database!");
+
+					} else {
+
+						System.out.println("Employe with Name : " + searchName + " is not found in the Database!");
+
+					}
+
+				}
 
 				break;
 
