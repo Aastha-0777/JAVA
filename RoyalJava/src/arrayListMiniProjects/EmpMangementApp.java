@@ -1,6 +1,7 @@
 package arrayListMiniProjects;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Scanner;
 
 public class EmpMangementApp {
@@ -60,10 +61,12 @@ public class EmpMangementApp {
 			System.out.println("5. Search a Employees by Name.");
 			System.out.println("6. Display All Employee Records");
 			System.out.println("7. Remove All Employees from list.");
-			System.out.println("8. Display All Employees Different traversal techniques.[Iterator + ListIterator]");
-			System.out.println("9. Check whether a Employee is already enrolled.");
-			System.out.println("10. Display total enrolled Employees.");
-			System.out.println("11. Employee Application Exit");
+			System.out.println("8. Sort List By Comparable.");
+			System.out.println("9. Sort List By Comparator.");
+			System.out.println("10. Display All Employees Different traversal techniques.[Iterator + ListIterator]");
+			System.out.println("11. Check whether a Employee is already enrolled.");
+			System.out.println("12. Display total enrolled Employees.");
+			System.out.println("13. Employee Application Exit");
 			System.out.print("Enter above choice for Employee Application : ");
 			choice = sc.nextInt();
 			switch (choice) {
@@ -133,7 +136,7 @@ public class EmpMangementApp {
 					boolean resFlag = (boolean) obj;
 
 					if (resFlag) {
-						
+
 						System.out.println("Employe with id : " + searchId + " found in the Database!");
 
 					} else {
@@ -200,16 +203,145 @@ public class EmpMangementApp {
 			case 7:
 				break;
 
-			case 8:
+			case 8: {
+
+				System.out.println("----------- SELECT ORDER -----------");
+				System.out.println("1. Accending Order");
+				System.out.println("2. Descending Order");
+				System.out.println("3. Return");
+				System.out.print("Enter Your Choice : ");
+				int orderChoice = sc.nextInt();
+
+				switch (orderChoice) {
+
+				case 1:
+					Collections.sort(empList);
+					System.out.println("List Sorted in Accending Order Id Wise Using Comparable.");
+					break;
+
+				case 2:
+					//coming soon...
+					break;
+
+				case 3:
+					break;
+
+				default:
+					System.out.println("Please enter a valid choice...");
+
+				}// end of switch
+
+			}
 				break;
 
-			case 9:
+			case 9: {
+
+				System.out.println("----------- SELECT ORDER -----------");
+				System.out.println("1. Accending Order");
+				System.out.println("2. Descending Order");
+				System.out.println("3. Return");
+				System.out.print("Enter Your Choice : ");
+				int orderChoice = sc.nextInt();
+
+				switch (orderChoice) {
+
+				case 1: {
+
+					System.out.println("----------- SELECT ELEMENT -----------");
+					System.out.println("1. ID Wise");
+					System.out.println("2. Salary Wise");
+					System.out.println("3. Name Wise");
+					System.out.println("4. Return");
+					System.out.print("Enter Your Choice : ");
+					int ch = sc.nextInt();
+
+					switch (ch) {
+
+					case 1:
+						Collections.sort(empList, new idWiseEmpSort());
+						System.out.println("List Sorted in Accending Order Id Wise Using Comparator.");
+						break;
+
+					case 2:
+						Collections.sort(empList, new salWiseEmpSort());
+						System.out.println("List Sorted in Accending Order Salary Wise Using Comparator.");
+						break;
+
+					case 3:
+						Collections.sort(empList, new nameWiseEmpSort());
+						System.out.println("List Sorted in Accending Order Name Wise Using Comparator.");
+						break;
+
+					case 4:
+						break;
+
+					default:
+						System.out.println("Please enter a valid choie...");
+
+					}// end of switch
+
+				}
+					break;
+
+				case 2: {
+
+					System.out.println("----------- SELECT ELEMENT -----------");
+					System.out.println("1. ID Wise");
+					System.out.println("2. Salary Wise");
+					System.out.println("3. Name Wise");
+					System.out.println("4. Return");
+					System.out.print("Enter Your Choice : ");
+					int ch = sc.nextInt();
+
+					switch (ch) {
+
+					case 1:
+						Collections.sort(empList, new idWiseEmpSortDesc());
+						System.out.println("List Sorted in Descending Order Id Wise Using Comparator.");
+						break;
+
+					case 2:
+						Collections.sort(empList, new salWiseEmpSortDesc());
+						System.out.println("List Sorted in Descending Order Salary Wise Using Comparator.");
+						break;
+
+					case 3:
+						Collections.sort(empList, new nameWiseEmpSortDesc());
+						System.out.println("List Sorted in Descending Order Name Wise Using Comparator.");
+						break;
+
+					case 4:
+						break;
+
+					default:
+						System.out.println("Please enter a valid choie...");
+
+					}// end of switch
+
+				}
+					break;
+					
+				case 3:
+					break;
+
+				default:
+					System.out.println("Please enter a valid choice...");
+
+				}// end of switch
+
+			}
 				break;
 
 			case 10:
 				break;
 
 			case 11:
+				break;
+
+			case 12:
+				break;
+
+			case 13:
 				break;
 
 			default:

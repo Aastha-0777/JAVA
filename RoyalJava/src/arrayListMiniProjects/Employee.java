@@ -2,7 +2,7 @@ package arrayListMiniProjects;
 
 import java.util.Scanner;
 
-public class Employee {
+public class Employee implements Comparable<Employee>{
 	
 	private int id;
 	private String name;
@@ -86,6 +86,24 @@ public class Employee {
 		System.out.println("----------------------------------------------------------");
 		System.out.println(id + " " + name + " " + salary + " " + dsgn + " " + orgName);
 
+	}
+
+	@Override
+	public int compareTo(Employee e1) {
+		
+		if(getId() > e1.getId()) {
+			
+			return 1;
+			
+		}else if (getId() < e1.getId()) {
+			
+			return -1;
+			
+		}else {
+			
+			return 0;			
+			
+		}
 	}
 	
 }
