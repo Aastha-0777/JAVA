@@ -1,4 +1,4 @@
-package multithreading.bythreadclass;
+package multithreading.bythreadclass.task1;
 
 public class MyThread2 extends Thread{
 	
