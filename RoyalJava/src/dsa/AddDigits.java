@@ -37,15 +37,15 @@ public class AddDigits {
 	 * }
 	 */
 
-	public static void main(String[] args) {
-
-		System.out.print("Enter a Number : ");
-		int num = sc.nextInt();
-
-		int res = addDigits(num);
-
-		System.out.println("Res : " + res);
-
-	}
+		public static void main(String[] args) {
+	
+			System.out.print("Enter a Number : ");
+			int num = sc.nextInt();
+	
+			int res = addDigits(num);
+	
+			System.out.println("Res : " + res);
+	
+		}
 
 }
