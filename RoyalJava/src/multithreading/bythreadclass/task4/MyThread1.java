@@ -2,9 +2,9 @@ package multithreading.bythreadclass.task4;
 
 public class MyThread1 extends Thread{
 
-	Table resource = null;
+	Prime resource = null;
 	
-	public MyThread1(Table resource) {
+	public MyThread1(Prime resource) {
 
 		this.resource = resource;
 
@@ -13,8 +13,22 @@ public class MyThread1 extends Thread{
 	@Override
 	public void run() {
 
-		resource.printTable(1, 200);
-
+		for (int i = 1; i <= 200; i++) {
+			
+			if((resource.isPrime(i)) && i != 1) {
+				
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				
+				System.out.println(Thread.currentThread().getName() + "----" + i);
+				
+			}
+			
+		}
+	
 	}
 	
 }
