@@ -13,22 +13,25 @@ public class MyThread2 extends Thread {
 	@Override
 	public void run() {
 
-		for (int i = 201; i <= 400; i++) {
+		synchronized (resource) {
 
-			if ((resource.isPrime(i)) && i != 1) {
+			for (int i = 201; i <= 400; i++) {
 
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+				if ((resource.isPrime(i)) && i != 1) {
+
+					try {
+						Thread.sleep(500);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+
+					System.out.println(Thread.currentThread().getName() + "----" + i);
+
 				}
-
-				System.out.println(Thread.currentThread().getName() + "----" + i);
 
 			}
 
 		}
-
 	}
 
 }
