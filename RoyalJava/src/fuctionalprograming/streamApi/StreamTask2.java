@@ -13,8 +13,6 @@ public class StreamTask2 {
 		 * with the letter 'a' or 'A' (case-insensitive). -Convert all matching names to
 		 * UPPERCASE. -Sort the names in alphabetical order and collect them into a
 		 * list.
-		 * 
-		 * 
 		 */
 		
 		List<String> listName = new ArrayList<String>(List.of("Ava", "Lisbon", "Jane", "Aastha", "Sakshi")); 
@@ -30,7 +28,6 @@ public class StreamTask2 {
 		 * products: -Filter products that have a price greater than $500. -Sort them by
 		 * price in descending order (highest price first). -Extract only the names of
 		 * those products and collect them into a List<String>.
-		 * 
 		 */
 
 		
@@ -46,6 +43,8 @@ public class StreamTask2 {
 
 		System.out.println(productList);
 		System.out.println(list2);
+		
+//		var nums = new int[] {0};
 		
 	}
 
