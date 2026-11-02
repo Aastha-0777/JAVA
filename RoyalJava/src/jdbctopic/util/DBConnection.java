@@ -15,7 +15,7 @@ public class DBConnection {
 	
 	//2. getConnection() Method
 	
-	public static void getConnectionM() {
+	public static Connection getConnectionM() {
 		
 		Connection conn = null;
 		
@@ -28,19 +28,21 @@ public class DBConnection {
 			conn = DriverManager.getConnection(URLNAME, USERNAME, PASSWORD);			
 			
 			//5. Validate conn Object
-			if(conn != null) {
-				
-				System.out.println("DB Connected : " + conn);
-				
-			}else {
-				
-				System.out.println("DB Not Connected : " + conn);
-				
-			}
+//			if(conn != null) {
+//				
+//				System.out.println("DB Connected : " + conn);
+//				
+//			}else {
+//				
+//				System.out.println("DB Not Connected : " + conn);
+//				
+//			}
 			
 		} catch (Exception e) {
 			e.printStackTrace();
 		} 
+		
+		return conn;
 		
 	}
 	
