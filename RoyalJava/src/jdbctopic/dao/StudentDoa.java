@@ -2,16 +2,22 @@ package jdbctopic.dao;
 
 import java.sql.Connection;
 import java.sql.Statement;
+import java.util.Scanner;
 
+import jdbctopic.bean.StudentBean;
 import jdbctopic.util.DBConnection;
 
 public class StudentDoa {
 
-	public int insertStudent() {
+	static Scanner sc = new Scanner(System.in);
+	
+	public int insertStudent(StudentBean sBean) {
 
 		int affectedRows = 0;
-		String insertQuery = "INSERT INTO student(name, std, marks) VALUES('Aastha Lakhatariya', 12, 100)";
+		String insertQuery = "INSERT INTO student(name, std, marks) VALUES('"+sBean.getName()+"', "+sBean.getStd()+", "+sBean.getMarks()+")";
 		Statement stmt = null;
+		
+		System.out.println("insertQuery : " + insertQuery);
 		
 		//1. get Connection
 		Connection conn = DBConnection.getConnectionM();
@@ -61,7 +67,16 @@ public class StudentDoa {
 		
 		StudentDoa studentDoa = new StudentDoa();
 		
-		int affectedRows = studentDoa.insertStudent();
+		System.out.print("Enter the Student's Name : ");
+		String name = sc.nextLine();
+		System.out.print("Enter the Student's Std : ");
+		int std = sc.nextInt();
+		System.out.print("Enter the Student's Marks : ");
+		int marks = sc.nextInt();
+		
+		StudentBean sBean = new StudentBean(name, std, marks);
+		
+		int affectedRows = studentDoa.insertStudent(sBean);
 		
 		if(affectedRows > 0) {
 			
