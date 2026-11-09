@@ -6,6 +6,8 @@ import java.util.Scanner;
 
 public class EmpMangementApp {
 
+	static Scanner sc = new Scanner(System.in);
+
 	public static Object searchEmpByValue(ArrayList<Employee> list, String searchValue, boolean flag) {
 
 		if (flag) {
@@ -46,8 +48,6 @@ public class EmpMangementApp {
 
 	public static void main(String[] args) {
 
-		Scanner sc = new Scanner(System.in);
-
 		ArrayList<Employee> empList = new ArrayList<Employee>();
 		int choice = 0;
 
@@ -69,34 +69,69 @@ public class EmpMangementApp {
 			System.out.println("13. Employee Application Exit");
 			System.out.print("Enter above choice for Employee Application : ");
 			choice = sc.nextInt();
+			Employee e;
 			switch (choice) {
 
-			case 1:
-				Employee e = new Employee();
-				e.scanData();
-				empList.add(e);
+			case 1:{
+				
+				Employee e1 = new Employee();
+				e1.scanData();
+				empList.add(e1);
 				System.out.println("Employee's Record Added Successufully in the List!!");
+				
+			}
 				break;
 
-			case 2:
+			case 2:{
+				
+				System.out.print("Enter the Id Of the Employee You want to Update : ");
+				int id = sc.nextInt();
+
+				System.out.print("Enter the New Name Of the Employee : ");
+				String name = sc.nextLine();
+				System.out.print("Enter the New Salary Of the Employee : ");
+				int salary = sc.nextInt();
+				System.out.print("Enter the New Dsgn Of the Employee : ");
+				String dsgn = sc.nextLine();
+				System.out.print("Enter the New OrgName Of the Employee : ");
+				String orgName = sc.nextLine();
+
+				for (Employee e1 : empList) {
+
+					if (e1.getId() == id) {
+
+						e1.setName(name);
+						e1.setSalary(salary);
+						e1.setDsgn(dsgn);
+						e1.setOrgName(orgName);
+						break;
+
+					}
+
+				}
+
+
+				
+			}
 				break;
 
-			case 3:
+			case 3:{
+				
 
 				System.out.print("Enter the Employee ID You want to Delete : ");
-				int id = sc.nextInt();
+				int id1 = sc.nextInt();
 				boolean deleteFlag = true;
 
 				for (int i = 0; i < empList.size(); i++) {
 
 					e = empList.get(i);
 
-					if (e.getId() == id) {
+					if (e.getId() == id1) {
 
 						deleteFlag = false;
 						empList.remove(i);
 						System.out.println(
-								"Employe with id : " + id + " has been removed Successufully form the Database!");
+								"Employe with id : " + id1 + " has been removed Successufully form the Database!");
 
 					}
 
@@ -104,14 +139,17 @@ public class EmpMangementApp {
 
 				if (deleteFlag) {
 
-					System.out.println("Employe with id : " + id + " is not found in	 the Database!");
+					System.out.println("Employe with id : " + id1 + " is not found in	 the Database!");
 
 				}
 
+
+				
+			}
 				break;
 
-			case 4:
-
+			case 4:{
+			
 				System.out.print("Enter the Employee ID You Want to Search : ");
 				int searchId = sc.nextInt();
 
@@ -146,16 +184,17 @@ public class EmpMangementApp {
 					}
 
 				}
-
+				
+			}
 				break;
 
-			case 5:
-
+			case 5:{
+				
 				System.out.print("Enter the Employee Name You Want to Search : ");
 				sc.nextLine();
 				String searchName = sc.nextLine();
 
-				obj = searchEmpByValue(empList, searchName, true);
+				Object obj = searchEmpByValue(empList, searchName, true);
 
 				if (obj instanceof Integer) {
 
@@ -187,49 +226,33 @@ public class EmpMangementApp {
 
 				}
 
+				
+			}
 				break;
 
-			case 6:
-
+			case 6:{
+				
 				for (int i = 0; i < empList.size(); i++) {
 
 					e = empList.get(i);
 					e.display();
 
 				}
-
+				
+			}
 				break;
 
-			case 7:
+			case 7: {
+				System.out.println("Removing all the Employees from the List...");
+				empList.clear();
+				System.out.println("All the Employees Removed!!");
+			}
 				break;
 
 			case 8: {
 
-				System.out.println("----------- SELECT ORDER -----------");
-				System.out.println("1. Accending Order");
-				System.out.println("2. Descending Order");
-				System.out.println("3. Return");
-				System.out.print("Enter Your Choice : ");
-				int orderChoice = sc.nextInt();
-
-				switch (orderChoice) {
-
-				case 1:
-					Collections.sort(empList);
-					System.out.println("List Sorted in Accending Order Id Wise Using Comparable.");
-					break;
-
-				case 2:
-					//coming soon...
-					break;
-
-				case 3:
-					break;
-
-				default:
-					System.out.println("Please enter a valid choice...");
-
-				}// end of switch
+				Collections.sort(empList);
+				System.out.println("List Sorted in Accending Order Id Wise Using Comparable.");
 
 			}
 				break;
@@ -320,7 +343,7 @@ public class EmpMangementApp {
 
 				}
 					break;
-					
+
 				case 3:
 					break;
 
