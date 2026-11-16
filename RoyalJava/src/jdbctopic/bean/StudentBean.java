@@ -15,7 +15,7 @@ public class StudentBean {
 		this.std = std;
 		this.marks = marks;
 	}
-
+	
 	public int getRno() {
 		return rno;
 	}
