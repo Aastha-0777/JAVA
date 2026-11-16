@@ -1,0 +1,220 @@
+================================================================================
+PROJECT TITLE: HIGH-CONCURRENCY TICKET BOOKING & WAITLIST ENGINE
+Target Skill Level: Intermediate Core Java (Collections, Exceptions, Threads)
+Real-World Inspiration: IRCTC Tatkal Booking / BookMyShow Flash Sales
+================================================================================
+
+1. PROJECT OVERVIEW & REAL-WORLD SCENARIO
+--------------------------------------------------------------------------------
+During high-demand events—such as an IRCTC Tatkal train booking window at 10:00 AM
+or a cold-play concert flash sale—thousands of users attempt to book a limited
+number of seats at the exact same millisecond.
+
+If the backend server does not manage concurrent access properly, three fatal
+real-world bugs occur:
+  1. Double Booking: Two users pay for and receive confirmation for Seat "A1".
+  2. Ghost Locks: A user selects Seat "A2", their internet disconnects during
+     payment, and Seat "A2" remains permanently locked so nobody else can buy it.
+  3. Unfair Waitlists: When a confirmed user cancels a ticket, the seat is
+     grabbed randomly instead of going to the first person waiting in line.
+
+Your objective is to build a pure Core Java backend engine that simulates a
+coach of seats, handles dozens of simultaneous buyer threads, enforces temporary
+seat hold timers, recovers gracefully from payment failures using custom
+exceptions, and automatically promotes waitlisted users upon cancellation.
+
+
+2. WHAT YOU CAN PUT ON YOUR RESUME AFTER BUILDING THIS
+--------------------------------------------------------------------------------
+Project Name: Concurrent Ticket Reservation & Automated Waitlist Engine (Java)
+* Engineered a multithreaded reservation engine in Core Java handling 50+
+  concurrent booking requests with zero race conditions or double-bookings.
+* Implemented fine-grained lock synchronization and a daemon sweeper thread to
+  auto-release unpaid seat holds after a configurable timeout window.
+* Designed an automated FIFO waitlist promotion pipeline and audit logging
+  system utilizing Java Collections (Map, Set, Queue, List) and custom
+  exception recovery workflows.
+
+
+3. CORE TECHNICAL REQUIREMENTS (LIMITED TO YOUR CURRENT JAVA TOOLKIT)
+--------------------------------------------------------------------------------
+You must build this project using ONLY Core Java concepts you have learned:
+
+A. Java Collections API:
+   - Map<String, Seat>: Store and look up seats instantly by Seat ID (e.g., "S1").
+   - Set<String>: Track users who have already booked a seat to enforce a strict
+     "1 Ticket Per User ID" rule during flash sales.
+   - Queue<String> (using LinkedList): Maintain a strict First-In-First-Out (FIFO)
+     Waitlist of User IDs when all seats are full.
+   - List<String> (using ArrayList): Maintain a chronological Audit Log of every
+     successful booking, failed payment, lock expiry, and waitlist promotion.
+
+B. Exception Handling (try-catch-finally & throw/throws):
+   - Create 4 Custom Checked/Unchecked Exceptions:
+     1. InvalidSeatException (when a user requests a seat ID that doesn't exist)
+     2. DuplicateBookingException (when a user tries to book a second ticket)
+     3. SeatUnavailableException (when a seat is already LOCKED or BOOKED)
+     4. PaymentFailedException (when simulated payment fails or times out)
+   - Use try-catch-finally blocks so any unexpected error during payment rolls
+     the seat state safely back to AVAILABLE.
+
+C. Multithreading (Thread, Runnable, synchronized, sleep):
+   - Buyer Threads: Multiple threads running simultaneously representing users
+     trying to book specific seats or "any available seat".
+   - Fine-Grained Synchronization: Synchronize cleanly so locking Seat "S1" does
+     not block another user from locking Seat "S2" at the same time.
+   - Background Lock-Expiry Thread: A background thread that wakes up every
+     500ms to scan for seats that have been stuck in the LOCKED state for too
+     long without payment confirmation, resetting them to AVAILABLE.
+
+
+4. STEP-BY-STEP IMPLEMENTATION BLUEPRINT
+--------------------------------------------------------------------------------
+
+STEP 1: Create the Enum and Custom Exceptions
+---------------------------------------------
+1. Create an enum `SeatStatus` with three values:
+   - `AVAILABLE`
+   - `LOCKED`
+   - `BOOKED`
+2. Create the four custom exception classes extending `Exception`:
+   - `InvalidSeatException`
+   - `DuplicateBookingException`
+   - `SeatUnavailableException`
+   - `PaymentFailedException`
+   Pass a descriptive `String message` to `super(message)` in each constructor.
+
+STEP 2: Build the `Seat` Model Class
+------------------------------------
+Create a `Seat` class with the following private fields:
+- `final String seatId` (e.g., "A1", "A2" ... "A10")
+- `SeatStatus status` (starts as `AVAILABLE`)
+- `String lockedByUserId` (null when available)
+- `String bookedByUserId` (null when not booked)
+- `long lockTimestamp` (stores `System.currentTimeMillis()` when locked; 0 otherwise)
+
+Provide getters and synchronized state-transition helper methods on the `Seat`
+object (or synchronize on the `Seat` instance inside your engine).
+
+STEP 3: Build the Core `TicketBookingEngine` Class
+--------------------------------------------------
+Initialize the engine with a fixed number of seats (e.g., 5 to 10 seats so
+contention is high and easy to observe in the console).
+
+Data structures inside `TicketBookingEngine`:
+- `Map<String, Seat> seatInventory = new HashMap<>();`
+- `Set<String> confirmedUsers = new HashSet<>();`
+- `Queue<String> waitlistQueue = new LinkedList<>();`
+- `List<String> auditLogs = new ArrayList<>();`
+- `final long LOCK_TIMEOUT_MS = 2000;` (2 seconds max hold time for payment)
+
+STEP 4: Implement the 2-Phase Booking Workflow (`bookSeat`)
+-----------------------------------------------------------
+Write a method: `public void bookSeat(String userId, String seatId)`
+It must execute the following lifecycle:
+
+  Phase A: Validation & Locking
+  1. Check if `seatId` exists in `seatInventory`. If not, throw `InvalidSeatException`.
+  2. Check if `userId` is already in `confirmedUsers`. If yes, throw
+     `DuplicateBookingException`.
+  3. Acquire a lock on the target `Seat` object.
+  4. Check the seat's status:
+     - If `AVAILABLE`: Change status to `LOCKED`, set `lockedByUserId = userId`,
+       and set `lockTimestamp = System.currentTimeMillis()`. Log the lock event.
+     - If `LOCKED` or `BOOKED`: Throw `SeatUnavailableException`.
+
+  Phase B: Simulated Payment (Outside the Seat Lock!)
+  5. Simulate network payment gateway delay using `Thread.sleep(randomTime)`.
+     - Make some threads sleep for 800ms (fast payment, succeeds before 2000ms).
+     - Make some threads sleep for 2500ms (slow payment, exceeds 2000ms timeout!).
+     - Make some threads randomly throw `PaymentFailedException` (card declined).
+
+  Phase C: Finalizing or Rolling Back
+  6. Re-acquire the lock on the `Seat` object to finalize the transaction:
+     - Verify that the seat is STILL `LOCKED` AND `lockedByUserId` is STILL
+       equal to `userId` (because the background timer thread might have revoked
+       the lock if the user took 2500ms!).
+     - If the lock expired while paying, throw `PaymentFailedException("Lock expired during payment! Refund initiated.")`.
+     - If valid and payment succeeded: Change status to `BOOKED`, set
+       `bookedByUserId = userId`, clear `lockedByUserId`, and add `userId` to
+       `confirmedUsers`. Record in `auditLogs`.
+  7. In the `catch` block:
+     - If `PaymentFailedException` occurs and the seat is still locked by this
+       `userId`, reset the seat back to `AVAILABLE`, clear `lockedByUserId`, and
+       log the rollback.
+     - If `SeatUnavailableException` occurs and all seats in the coach are currently
+       unavailable, offer to add `userId` to the `waitlistQueue` (if not already
+       on the waitlist or confirmed).
+
+STEP 5: Implement the Background Lock-Expiry Sweeper Thread
+-----------------------------------------------------------
+Create a class `LockExpirySweeper implements Runnable`:
+- Inside `run()`, loop continuously while the simulation is active.
+- Sleep for `500ms` on each iteration.
+- Iterate over the values in `seatInventory`.
+- For each `Seat`, synchronize on the seat and check:
+  If `status == SeatStatus.LOCKED` AND
+  `(System.currentTimeMillis() - lockTimestamp) > LOCK_TIMEOUT_MS`:
+    - Reset `status = SeatStatus.AVAILABLE`
+    - Clear `lockedByUserId = null`
+    - Reset `lockTimestamp = 0`
+    - Add an entry to `auditLogs`: `"[TIMEOUT] Seat X lock expired for User Y; released back to pool."`
+
+STEP 6: Implement Ticket Cancellation & Automatic Waitlist Promotion
+--------------------------------------------------------------------
+Write a method: `public void cancelBooking(String userId, String seatId)`
+1. Validate that the seat exists and is currently `BOOKED` by `userId`.
+2. Remove `userId` from `confirmedUsers`.
+3. Check `waitlistQueue`:
+   - If `waitlistQueue` is NOT empty:
+     Poll the next waiting `nextUserId` from the front of the queue ( making sure
+     they haven't already booked another seat).
+     Immediately assign the seat to `nextUserId` (`bookedByUserId = nextUserId`),
+     add `nextUserId` to `confirmedUsers`, and log:
+     `"[WAITLIST PROMOTED] Seat " + seatId + " transferred from " + userId + " to " + nextUserId`.
+   - If `waitlistQueue` IS empty:
+     Reset the seat status to `AVAILABLE`, clear `bookedByUserId`, and log the
+     cancellation.
+
+STEP 7: Build the Multi-Threaded Simulation Driver (`Main.java`)
+----------------------------------------------------------------
+In `public static void main(String[] args)`:
+1. Initialize `TicketBookingEngine` with 5 seats (`"S1"` through `"S5"`).
+2. Start the `LockExpirySweeper` as a Daemon thread (`setDaemon(true)`).
+3. Spawn 15 to 20 `UserBookingTask` threads (`Thread` objects):
+   - Assign multiple threads to fight over `"S1"` and `"S2"` at the exact same time.
+   - Configure specific threads to simulate slow payments (> 2000ms) and card
+     declines.
+   - Have 1 or 2 confirmed users call `cancelBooking()` midway through to trigger
+     waitlist promotion.
+4. Call `.join()` on all user threads so `main` waits until all transactions finish.
+5. Print the **Final System Audit Report**:
+   - Final state of every Seat (`S1` to `S5`) and who owns it.
+   - Total confirmed users inside `Set<String> confirmedUsers`.
+   - Remaining users in `Queue<String> waitlistQueue`.
+   - Complete chronological `List<String> auditLogs`.
+   - Verification Check: Assert that no two users share the same seat and
+     `confirmedUsers.size()` matches the exact count of `BOOKED` seats.
+
+
+5. EXPECTED CONSOLE OUTPUT SAMPLE
+--------------------------------------------------------------------------------
+[00:00.012] [LOCK] User-3 locked Seat S1 (Hold expires in 2000ms)
+[00:00.015] [REJECTED] User-7 failed to lock Seat S1: Seat S1 is currently LOCKED. Added User-7 to Waitlist.
+[00:00.018] [LOCK] User-2 locked Seat S2 (Hold expires in 2000ms)
+[00:00.620] [BOOKED] User-2 completed payment for Seat S2!
+[00:02.110] [TIMEOUT] Seat S1 lock expired for User-3! Released back to AVAILABLE.
+[00:02.520] [PAYMENT FAILED] User-3 payment arrived after lock timeout on Seat S1. Refund initiated.
+[00:02.800] [CANCEL] User-2 cancelled Seat S2.
+[00:02.802] [WAITLIST PROMOTED] Seat S2 automatically assigned to waitlisted User-7!
+
+================ FINAL AUDIT SUMMARY ================
+Seat S1 : AVAILABLE (Owner: NONE)
+Seat S2 : BOOKED    (Owner: User-7)
+Seat S3 : BOOKED    (Owner: User-4)
+Seat S4 : BOOKED    (Owner: User-9)
+Seat S5 : BOOKED    (Owner: User-11)
+Confirmed Users Set : [User-4, User-7, User-9, User-11]
+Remaining Waitlist  : [User-12, User-14]
+Double-Booking Check: PASSED (4 Booked Seats == 4 Unique Confirmed Users)
+=====================================================

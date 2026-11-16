@@ -1,0 +1,319 @@
+================================================================================
+CRITICAL THINKING & ARCHITECTURAL GUIDE: TICKET BOOKING ENGINE
+How to Use This File:
+1. Read through Part 1 (Questions 1 to 16) BEFORE or WHILE writing your code.
+2. Try to answer each question in your own words or on paper. These are the exact
+   questions a technical interviewer will ask you when they see this project on
+   your resume!
+3. Scroll down to Part 2 only after you have thought through your own answers to
+   verify your reasoning and study the complete solutions.
+================================================================================
+
+
+================================================================================
+PART 1: THE CRITICAL THINKING QUESTIONS (THINK BEFORE SCROLLING!)
+================================================================================
+
+CATEGORY A: COLLECTIONS API & DATA STRUCTURE CHOICES
+----------------------------------------------------
+Question 1 (Map vs. List for Seats):
+Why should we store the seats in a `Map<String, Seat>` instead of an
+`ArrayList<Seat>`? What happens to performance if a stadium has 50,000 seats and
+1,000 threads look up seat "Z-999" at the same time?
+
+Question 2 (Preventing Duplicate Bookings with Set):
+Suppose User-5 spawns two browser tabs (two threads) and tries to book Seat S1
+and Seat S2 simultaneously, when the rule is "Max 1 seat per user". Why is a
+`Set<String>` the best collection for tracking confirmed users, and WHEN should
+a user be added or checked against this Set?
+
+Question 3 (Waitlist Queue Choice):
+Why must the Waitlist use a `Queue<String>` (implemented via `LinkedList`) rather
+than a `Set` or a regular `List`? What happens if the same frustrated user clicks
+"Book" five times while all seats are full—how do you prevent them from occupying
+5 slots in the Waitlist Queue?
+
+Question 4 (Thread Safety of Standard Collections):
+`ArrayList`, `HashSet`, and `LinkedList` are NOT thread-safe by default. If Thread-1
+is adding a log string to `List<String> auditLogs` at the exact same millisecond
+Thread-2 is adding a log string, what can go wrong? How can you protect your shared
+collections using what you know about `synchronized`?
+
+
+CATEGORY B: MULTITHREADING & SYNCHRONIZATION DESIGN
+---------------------------------------------------
+Question 5 (The Biggest Beginner Trap - Coarse vs. Fine Locking):
+Suppose you put the `synchronized` keyword on the entire `bookSeat(userId, seatId)`
+method, and inside that method you have `Thread.sleep(1500)` to simulate payment.
+What happens when User-1 tries to buy Seat S1 and User-2 tries to buy Seat S2 at
+the same time? Is this how a real ticket website works?
+
+Question 6 (Locking on the Specific Seat Object):
+Instead of synchronizing the whole `TicketBookingEngine`, what if you synchronize
+ specifically on the `Seat` object (`synchronized (seat)`)? How does that allow
+User-1 (booking S1) and User-2 (booking S2) to proceed in parallel while still
+blocking User-3 (also trying to book S1)?
+
+Question 7 (Why Payment Must Happen OUTSIDE the Synchronized Block):
+If you synchronize on `seat` (`synchronized (seat)`) and keep `Thread.sleep(2000)`
+(the payment simulation) INSIDE that `synchronized (seat)` block, what happens when
+the `LockExpirySweeper` background thread tries to check `synchronized (seat)` to
+see if the lock has expired?
+
+Question 8 (The "Check-Then-Act" Race Condition After Payment):
+Once you move `Thread.sleep()` outside the `synchronized` block, your thread wakes
+up after paying. Why can't you immediately mark `seat.status = BOOKED` without
+checking `seat.getStatus()` and `seat.getLockedByUserId()` a second time inside a
+second `synchronized` block? Walk through the exact timeline where two people could
+end up owning the same seat if you skip the second check!
+
+Question 9 (Daemon Thread vs. Normal Thread for the Sweeper):
+The `LockExpirySweeper` runs inside a `while (true)` loop checking for expired locks
+every 500ms. If you start it as a normal user thread (`new Thread(sweeper).start()`),
+what happens when all 20 buyer threads finish their work in `main()`? Will your Java
+program ever exit? How does `thread.setDaemon(true)` solve this?
+
+
+CATEGORY C: EXCEPTION HANDLING & FAILURE RECOVERY
+-------------------------------------------------
+Question 10 (State Rollback on Exception):
+Suppose User-1 successfully changes Seat S1 from `AVAILABLE` to `LOCKED`. Then,
+during the payment step, a `PaymentFailedException` (or an unexpected
+`RuntimeException`) is thrown. If you only catch the exception and print an error
+message, what state is Seat S1 left in? How should your `catch` block fix this?
+
+Question 11 (Who Has the Right to Unlock a Seat in the `catch` Block?):
+Look closely at Question 10: Suppose User-1 locks Seat S1, takes 3 seconds to pay
+(timeout is 2 seconds), and at 2.1 seconds the Sweeper Thread releases S1, and at
+2.2 seconds User-2 locks S1! Then at 3.0 seconds, User-1's payment fails and enters
+User-1's `catch` block. If User-1's `catch` block blindly resets Seat S1 to
+`AVAILABLE`, what catastrophic bug just happened to User-2?
+
+Question 12 (Checked vs. Unchecked Custom Exceptions):
+Should exceptions like `SeatUnavailableException` and `PaymentFailedException`
+extend `Exception` (Checked) or `RuntimeException` (Unchecked)? Why is making them
+Checked (`extends Exception`) helpful for forcing the caller thread to handle
+recovery logic?
+
+
+CATEGORY D: WAITLIST & CANCELLATION EDGE CASES
+----------------------------------------------
+Question 13 (Waitlist Promotion Race Condition):
+When User-1 cancels Seat S1, if you simply set `S1.status = AVAILABLE` and then
+separately tell the Waitlist user "Hey, try calling `bookSeat` now!", a new random
+thread (User-99) might swoop in and steal Seat S1 before the waitlisted user gets
+it. How should `cancelBooking()` transfer ownership atomically so nobody can cut
+in line?
+
+Question 14 (Ghost Users in the Waitlist):
+Suppose User-8 is added to the Waitlist because S1 was busy, and 100ms later User-8
+successfully books Seat S5 directly. Now User-8 is in `confirmedUsers` AND still
+sitting inside `waitlistQueue`. When someone cancels Seat S1 later, what happens if
+you pop User-8 from the waitlist without checking `confirmedUsers` first?
+
+Question 15 (Preventing Deadlocks Between Two Locks):
+In `bookSeat()` and `cancelBooking()`, you need to touch both the `Seat` object AND
+shared collections like `confirmedUsers` or `waitlistQueue`. If Thread-A locks
+`seat` then locks `confirmedUsers`, while Thread-B locks `confirmedUsers` then locks
+`seat`, what classic multithreading freeze will occur? How do you establish a consistent
+locking rule to make deadlocks impossible?
+
+Question 16 (Proving Correctness at the End of `main()`):
+When 20 threads print 100 lines of logs to the console, it is hard to tell by eye
+whether a bug happened. What mathematical invariant (equation) between the count of
+`BOOKED` seats and `confirmedUsers.size()` can your program automatically check at
+the end of `main()` to prove 100% that zero double-bookings occurred?
+
+
+================================================================================
+PART 2: COMPLETE ANSWER KEY & ARCHITECTURAL SOLUTIONS
+================================================================================
+(Read this section after attempting the questions above!)
+
+--------------------------------------------------------------------------------
+ANSWERS TO CATEGORY A: COLLECTIONS API & DATA STRUCTURE CHOICES
+--------------------------------------------------------------------------------
+
+ANSWER 1 (Map vs. List for Seats):
+An `ArrayList<Seat>` requires linear search—checking element by element from index 0
+until matching `"Z-999"`, which takes O(N) time. With 50,000 seats and 1,000 threads,
+that is up to 50,000,000 comparisons! A `HashMap<String, Seat>` uses the `hashCode()`
+of the seat ID string (`"Z-999"`) to jump directly to the memory bucket in O(1)
+constant time. Since the seat map is populated once at startup (the coach never grows
+new seats mid-journey), reading from `seatInventory.get(seatId)` is lightning fast.
+
+ANSWER 2 (Preventing Duplicate Bookings with Set):
+A `HashSet<String>` guarantees uniqueness and checks membership (`confirmedUsers.contains(userId)`)
+in O(1) time.
+CRITICAL TIMING Nuance:
+- You should check `confirmedUsers.contains(userId)` BEFORE locking a seat, AND check
+  it again right when finalizing the booking (`confirmedUsers.add(userId)` returns
+  `false` if the user was already present!).
+- Better yet, you can also maintain a `Set<String> activeLocksByUser` so a single user
+  cannot even *lock* two seats simultaneously across two threads.
+
+ANSWER 3 (Waitlist Queue Choice):
+A `Queue<String>` (`LinkedList`) enforces strict First-In-First-Out (FIFO) ordering:
+`offer(userId)` adds to the tail, and `poll()` removes from the head. A `HashSet`
+destroys arrival order, and removing index 0 from an `ArrayList` shifts all remaining
+elements in memory.
+To prevent a user from entering the waitlist 5 times, before calling
+`waitlistQueue.offer(userId)`, check `!waitlistQueue.contains(userId)` (or keep an
+accompanying `Set<String> waitlistedUsers` for instant lookup).
+
+ANSWER 4 (Thread Safety of Standard Collections):
+If two threads call `auditLogs.add(...)` on an unsynchronized `ArrayList` at the same
+millisecond, they may write to the same internal array index, overwriting a log entry,
+or trigger an internal array resize simultaneously, throwing a
+`ConcurrentModificationException` or `ArrayIndexOutOfBoundsException`.
+Solution: Wrap every access to `auditLogs` in a synchronized helper method:
+```java
+public synchronized void logEvent(String message) {
+    auditLogs.add(message);
+    System.out.println(message);
+}
+```
+Or use `Collections.synchronizedList(new ArrayList<>())`.
+
+
+--------------------------------------------------------------------------------
+ANSWERS TO CATEGORY B: MULTITHREADING & SYNCHRONIZATION DESIGN
+--------------------------------------------------------------------------------
+
+ANSWER 5 (The Biggest Beginner Trap - Coarse vs. Fine Locking):
+If `public synchronized void bookSeat(...)` is synchronized on the whole engine AND
+contains `Thread.sleep(1500)`, then the entire booking server turns into a single-file
+line! User-2 trying to buy Seat S2 has to wait 1.5 seconds for User-1 to finish
+typing their credit card details for Seat S1. In the real world, seats S1 and S2 are
+independent resources—locking S1 should only block other people who want S1.
+
+ANSWER 6 (Locking on the Specific Seat Object):
+Every Java object has its own intrinsic monitor lock. When you write:
+```java
+Seat seat = seatInventory.get(seatId);
+synchronized (seat) {
+    // check and update seat status
+}
+```
+Thread-1 locks the `Seat("S1")` object, while Thread-2 locks the `Seat("S2")` object.
+Because those are two distinct objects on the heap, both threads execute their
+synchronized blocks simultaneously with zero contention! Meanwhile, Thread-3 trying
+to enter `synchronized (seat)` on `Seat("S1")` is paused until Thread-1 exits the
+block.
+
+ANSWER 7 (Why Payment Must Happen OUTSIDE the Synchronized Block):
+If `Thread.sleep(2500)` happens *inside* `synchronized (seat)`, then Thread-1 holds
+the monitor lock on `seat` while sleeping (`Thread.sleep` does NOT release locks!).
+When the `LockExpirySweeper` thread wakes up at 2000ms and tries to enter
+`synchronized (seat)` to expire the lock, it gets blocked at the door until Thread-1
+wakes up at 2500ms! Furthermore, any other user trying to check if S1 is available
+will freeze for 2.5 seconds instead of immediately getting a fast `SeatUnavailableException`.
+Therefore, you MUST:
+1. Enter `synchronized (seat)` -> change status to `LOCKED` -> exit `synchronized (seat)`.
+2. Run `Thread.sleep(...)` (Payment) OUTSIDE any lock.
+3. Re-enter `synchronized (seat)` -> verify lock is still owned by this user -> set `BOOKED`.
+
+ANSWER 8 (The "Check-Then-Act" Race Condition After Payment):
+Timeline of disaster if you don't re-verify ownership in Phase C:
+- `0.0s`: User-1 locks Seat S1 (`LOCKED` by User-1) and starts a slow 2.5s payment.
+- `2.0s`: `LockExpirySweeper` sees S1 has been locked for 2.0s. It resets S1 to `AVAILABLE`.
+- `2.1s`: User-2 locks Seat S1 (`LOCKED` by User-2) and pays in 0.2s -> at `2.3s`, S1 is `BOOKED` by User-2!
+- `2.5s`: User-1's slow `Thread.sleep(2500)` finishes! If User-1 blindly sets `S1.status = BOOKED` and `S1.bookedBy = User-1`, User-1 just overwrote User-2's confirmed ticket!
+Fix: Inside Phase C's `synchronized (seat)` block, User-1 MUST check:
+```java
+if (seat.getStatus() != SeatStatus.LOCKED || !userId.equals(seat.getLockedByUserId())) {
+    throw new PaymentFailedException("Seat lock expired during payment! Refunding " + userId);
+}
+```
+
+ANSWER 9 (Daemon Thread vs. Normal Thread for the Sweeper):
+The Java Virtual Machine (JVM) stays alive as long as at least one non-daemon ("user")
+thread is still running. Since the `LockExpirySweeper` has a `while (true)` loop, a
+normal thread will keep the program hanging forever even after `main()` finishes.
+Calling `sweeperThread.setDaemon(true)` before `.start()` tells the JVM: "This is a
+background helper thread; as soon as `main` and all buyer threads finish, automatically
+terminate this thread and exit the program."
+
+
+--------------------------------------------------------------------------------
+ANSWERS TO CATEGORY C: EXCEPTION HANDLING & FAILURE RECOVERY
+--------------------------------------------------------------------------------
+
+ANSWER 10 (State Rollback on Exception):
+If an exception is thrown during payment and not handled properly, Seat S1 stays
+in the `LOCKED` state until the timeout sweeper cleans it up (or forever if there is
+no sweeper). By catching `PaymentFailedException` and immediately releasing the lock,
+the seat becomes `AVAILABLE` right away (at 800ms instead of waiting until 2000ms),
+allowing the next customer to grab it immediately.
+
+ANSWER 11 (Who Has the Right to Unlock a Seat in the `catch` Block?):
+If User-1's `catch` block blindly resets `seat.setStatus(AVAILABLE)` without checking
+who currently holds the lock, User-1 will erase User-2's active lock or booking!
+Inside the `catch` block, you must synchronize on `seat` and check ownership first:
+```java
+synchronized (seat) {
+    if (seat.getStatus() == SeatStatus.LOCKED && userId.equals(seat.getLockedByUserId())) {
+        seat.setStatus(SeatStatus.AVAILABLE);
+        seat.setLockedByUserId(null);
+        seat.setLockTimestamp(0);
+        logEvent("[ROLLBACK] Released lock on " + seatId + " after failed payment by " + userId);
+    }
+}
+```
+
+ANSWER 12 (Checked vs. Unchecked Custom Exceptions):
+Extending `Exception` makes them Checked Exceptions. In Java, the compiler forces any
+method calling `bookSeat()` to either wrap the call in a `try-catch` block or declare
+`throws`. In a financial/booking engine, you want the compiler to force the developer
+to consciously handle `SeatUnavailableException` (e.g., by offering the waitlist) and
+`PaymentFailedException` (e.g., by triggering a refund alert and lock rollback).
+
+
+--------------------------------------------------------------------------------
+ANSWERS TO CATEGORY D: WAITLIST & CANCELLATION EDGE CASES
+--------------------------------------------------------------------------------
+
+ANSWER 13 (Waitlist Promotion Race Condition):
+Never set a cancelled seat to `AVAILABLE` if someone is waiting in the waitlist!
+Instead, inside `cancelBooking()`, while holding the lock, check the waitlist. If a
+valid waitlisted user exists, keep the seat status as `BOOKED` and directly change
+`seat.setBookedByUserId(nextWaitlistedUserId)` without the seat ever becoming
+`AVAILABLE` for even a microsecond. That way, no outside thread can steal it!
+
+ANSWER 14 (Ghost Users in the Waitlist):
+When polling from `waitlistQueue` during a cancellation, use a `while` loop to skip
+anyone who already managed to book another seat in the meantime:
+```java
+String nextUser = null;
+while (!waitlistQueue.isEmpty()) {
+    String candidate = waitlistQueue.poll();
+    if (!confirmedUsers.contains(candidate)) {
+        nextUser = candidate;
+        break;
+    }
+}
+```
+If `nextUser != null`, promote them! If the loop finishes and `nextUser == null`, then
+everyone in the waitlist already got seats elsewhere, so set the seat to `AVAILABLE`.
+
+ANSWER 15 (Preventing Deadlocks Between Two Locks):
+A deadlock happens when Thread-1 holds Lock A and waits for Lock B, while Thread-2
+holds Lock B and waits for Lock A.
+To make deadlocks 100% impossible, choose ONE consistent strategy:
+- Strategy 1 (Lock Ordering): Always synchronize on `seat` FIRST, and only call tiny
+  `synchronized` helper methods on the engine (`addConfirmedUser`, `pollWaitlist`)
+  that immediately return without ever trying to lock a `seat` inside them.
+- Since `addConfirmedUser` or `pollWaitlist` never calls `synchronized (seat)`, the
+  lock graph only goes in one direction (`Seat Lock -> State Collection Lock`),
+  meaning a circular wait (deadlock) can never happen!
+
+ANSWER 16 (Proving Correctness at the End of `main()`):
+At the end of `main()`, iterate through all `Seat` objects in `seatInventory.values()`:
+1. Count how many seats have `status == SeatStatus.BOOKED` (let's call this `bookedCount`).
+2. Put every `seat.getBookedByUserId()` into a temporary `Set<String> uniqueOwners`.
+3. Verify three conditions:
+   - `bookedCount == uniqueOwners.size()` (Proves no user owns 2 seats).
+   - `bookedCount == confirmedUsers.size()` (Proves `confirmedUsers` is 100% in sync with seats).
+   - Every seat with `status == AVAILABLE` has `lockedByUserId == null` and `bookedByUserId == null`.
+If all three conditions are true after 20 chaotic threads finish fighting over 5 seats,
+your concurrency logic is rock solid!
