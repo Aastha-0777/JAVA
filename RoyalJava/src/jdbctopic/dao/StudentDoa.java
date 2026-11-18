@@ -1,10 +1,12 @@
 package jdbctopic.dao;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
-
 import jdbctopic.bean.StudentBean;
 import jdbctopic.util.DBConnection;
 
@@ -112,14 +114,65 @@ public class StudentDoa {
 		
 	}
 	
-	public void getAllStudents() {
+	public List<StudentBean> getAllStudents() {
 
+		String selectQuery = "select * from student";
+		
+		Connection conn = DBConnection.getConnectionM();
+		Statement stmt = null;
+		ResultSet rs = null;
+		
+		List<StudentBean> list = new ArrayList<StudentBean>();
+		StudentBean sBean; 
+		
+		if(conn != null) {
+			
+			try {
+				
+				stmt = conn.createStatement();
+				rs = stmt.executeQuery(selectQuery);	
+		
+				while(rs.next()) {
+					
+					int rollNo = rs.getInt(1);
+					String name = rs.getString(2);
+					int std = rs.getInt(3);
+					int marks =  rs.getInt(4);
+					
+//					System.out.println(rollNo + " " + name + " " + std + " " + marks);
+					
+					sBean = new StudentBean(rollNo, name, std, marks);
+					
+					list.add(sBean);
+					
+				}
+				
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			
+		}else {
+			
+			System.out.println("DB Not connected : " + conn);
+			
+		}
+		
+		return list;
+		
 	}
 
 	
 	public static void main(String[] args) {
 		
 		StudentDoa studentDoa = new StudentDoa();
+		
+		List<StudentBean> allStudents = studentDoa.getAllStudents();
+		
+		for (StudentBean student : allStudents) {
+			
+			System.out.println(student.getRno() + " " + student.getName() + " " + student.getStd() + " " + student.getMarks());
+			
+		}
 		
 //		System.out.print("Enter the Student's Name : ");
 //		String name = sc.nextLine();
@@ -158,31 +211,31 @@ public class StudentDoa {
 //		}
 //	
 	
-		System.out.print("Enter the Roll No. of the Student You Want to Update : ");
-		int rNo = sc.nextInt();
-		sc.nextLine();
-		System.out.print("Enter the Student's Name : ");
-		String name = sc.nextLine();
-		System.out.print("Enter the Student's Std : ");
-		int std = sc.nextInt();
-		System.out.print("Enter the Student's Marks : ");
-		int marks = sc.nextInt();
-		
-		StudentBean sBean = new StudentBean(name, std, marks);	
-		
-		int affectedRows = studentDoa.updateStudent(sBean, rNo);
-		
-		if(affectedRows > 0) {
-			
-			System.out.println("Values Deleted Successfully : " + affectedRows);
-			
-		}else {
-			
-			System.out.println("Values not Deleted Successfully : " + affectedRows);
-			
-		}
-	
-		
+//		System.out.print("Enter the Roll No. of the Student You Want to Update : ");
+//		int rNo = sc.nextInt();
+//		sc.nextLine();
+//		System.out.print("Enter the Student's Name : ");
+//		String name = sc.nextLine();
+//		System.out.print("Enter the Student's Std : ");
+//		int std = sc.nextInt();
+//		System.out.print("Enter the Student's Marks : ");
+//		int marks = sc.nextInt();
+//		
+//		StudentBean sBean = new StudentBean(name, std, marks);	
+//		
+//		int affectedRows = studentDoa.updateStudent(sBean, rNo);
+//		
+//		if(affectedRows > 0) {
+//			
+//			System.out.println("Values Deleted Successfully : " + affectedRows);
+//			
+//		}else {
+//			
+//			System.out.println("Values not Deleted Successfully : " + affectedRows);
+//			
+//		}
+//	
+//		
 	}
 	
 }

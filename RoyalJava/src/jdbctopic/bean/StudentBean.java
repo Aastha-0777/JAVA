@@ -16,6 +16,14 @@ public class StudentBean {
 		this.marks = marks;
 	}
 	
+	public StudentBean(int rno, String name, int std, int marks) {
+		super();
+		this.rno = rno;
+		this.name = name;
+		this.std = std;
+		this.marks = marks;
+	}
+
 	public int getRno() {
 		return rno;
 	}
