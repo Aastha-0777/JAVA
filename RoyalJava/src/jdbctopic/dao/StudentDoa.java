@@ -161,16 +161,65 @@ public class StudentDoa {
 		
 	}
 
+	public StudentBean getStudentByName(String name) {
+		
+		String selectQuery = "SELECT * FROM student WHERE name LIKE '"+ name +"'";
+		Connection conn = DBConnection.getConnectionM();
+		Statement stmt = null;
+		StudentBean sBean = null;
+		ResultSet rs = null;
+		if(conn != null) {
+			
+			try {
+				stmt = conn.createStatement();
+				
+				rs = stmt.executeQuery(selectQuery);
+				
+				if(rs.next()) {
+					
+					int rollNo = rs.getInt(1);
+					int std = rs.getInt(3);
+					int marks =  rs.getInt(4);
+					sBean = new StudentBean(rollNo, name, std, marks);
+					
+				}
+				
+				
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			
+		}else {
+			
+			System.out.println("DB Not Connected!");
+			
+		}
+		
+		return sBean;
+		
+	}
 	
 	public static void main(String[] args) {
 		
 		StudentDoa studentDoa = new StudentDoa();
 		
-		List<StudentBean> allStudents = studentDoa.getAllStudents();
+//		List<StudentBean> allStudents = studentDoa.getAllStudents();
+//		
+//		for (StudentBean student : allStudents) {
+//			
+//			System.out.println(student.getRno() + " " + student.getName() + " " + student.getStd() + " " + student.getMarks());
+//			
+//		}
+	
+		StudentBean sBean = studentDoa.getStudentByName("Aastha Lakhatariya");
 		
-		for (StudentBean student : allStudents) {
+		if(sBean != null) {
 			
-			System.out.println(student.getRno() + " " + student.getName() + " " + student.getStd() + " " + student.getMarks());
+			System.out.println(sBean.getRno() + " " + sBean.getName() + " " + sBean.getStd() + " " + sBean.getMarks());
+			
+		}else {
+			
+			System.out.println("Name Not Found.");
 			
 		}
 		
