@@ -120,15 +120,12 @@ Already have Java, MySQL and Eclipse? Four steps:
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/<your-username>/Royal-Java.git
+git clone https://github.com/Aastha-0777/JAVA/tree/master/Product%20Management%20System.git
 
-# 2. Create the database and sample data
-mysql -u root -p < Royal-Java/ProductManagementSystem/sql/schema.sql
-
-# 3. Open Eclipse → File → Import → Existing Projects into Workspace → select ProductManagementSystem
+# 2. Open Eclipse → File → Import → Existing Projects into Workspace → select ProductManagementSystem
 #    Add the MySQL Connector/J jar to the Build Path
 
-# 4. Edit the password in DBConnection.java, then run MainApp.java
+# 3. Edit the password in DBConnection.java, then run MainApp.java
 ```
 
 Need more detail? Follow the full guide below.
@@ -151,8 +148,8 @@ Need more detail? Follow the full guide below.
 ### Step 1: Clone the repository
 
 ```bash
-git clone https://github.com/<your-username>/Royal-Java.git
-cd Royal-Java/ProductManagementSystem
+git clone https://github.com/Aastha-0777/JAVA/tree/master/Product%20Management%20System.git
+cd ProductManagementSystem
 ```
 
 ### Step 2: Create the database
@@ -443,12 +440,12 @@ The app never crashes on bad input. It shows a message and returns to the menu.
 |:-:|:-:|
 | <img src="./screenshots/main_menu.png" width="420"> | <img src="./screenshots/add_product.png" width="420"> |
 
-| View all (sorted by price) | Update and delete |
+| View all (sorted by price) | Validation and error handling |
 |:-:|:-:|
 | <img src="./screenshots/view_all_products.png" width="420"> | <img src="./screenshots/validation_errors.png" width="420"> |
 
-| Validation and error handling | Database table |
-|:-:|:-:|
+| Database table |
+|:-:|
 | <img src="./screenshots/database_table.png" width="420"> | 
 
 </details>
